@@ -1,0 +1,26 @@
+version: '3'
+services:
+    mongo:
+        image: mongo:latest
+        environment: 
+            MONGO_INITDB_ROOT_USERNAME: check-that
+            MONGO_INITDB_ROOT_PASSWORD: check-that
+            MONGO_INITDB_DATABASE: check-that
+        ports:
+            - 27017
+        volumes:
+            - mongo:/data/db
+    app:
+        build:
+            context: ./
+            target: builder
+        environment: 
+            PORT: '8000'
+            MONGO_URI: mongodb://check-that:check-that@mongo:27017/check-that?authSource=admin
+        ports:
+            - 8000:8000
+        command: npm run start:dev
+        volumes:
+            - ./src:/app/src
+volumes:
+    mongo:

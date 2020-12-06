@@ -22,6 +22,9 @@ export class ResultModel {
 
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: ServiceModel.name })
     service: ServiceDocument;
+
+    @Prop({ default: Date.now })
+    createdAt: Date;
 }
 
 export type ResultDocument = ResultModel & Document;

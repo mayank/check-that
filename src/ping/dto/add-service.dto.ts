@@ -1,4 +1,4 @@
-import { MinLength, IsUrl, ValidateNested, IsNotEmpty, IsOptional } from 'class-validator';
+import { MinLength, IsUrl, ValidateNested, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class HttpValidator {

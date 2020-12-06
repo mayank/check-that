@@ -14,8 +14,8 @@ export class PingGeneratorService {
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    // @Cron(CronExpression.EVERY_SECOND)
-    // @Timeout(500)
+    @Cron(CronExpression.EVERY_SECOND)
+    @Timeout(500)
     async handleCron() {
         const services: ServiceDocument[] = await this.pingService.getNextWatchlist();
         for(const service of services) {

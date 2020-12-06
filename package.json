@@ -35,6 +35,7 @@
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
     "mo": "^1.7.3",
+    "moment": "^2.29.1",
     "mongoose": "5.10.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

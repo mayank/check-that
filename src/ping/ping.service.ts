@@ -7,6 +7,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { PingGeneratorEvent } from './model/generator.event';
 import axios from 'axios';
 import { ResultDocument, ResultModel, ResultStatus } from './model/result.model';
+import { GetServiceMetricsDTO } from './dto/get-service-info.dto';
+import moment from 'moment';
 
 @Injectable()
 export class PingService {
@@ -65,5 +67,24 @@ export class PingService {
         }
 
         return result.save();
+    }
+
+    async getServiceMetrics(serviceInfo: GetServiceMetricsDTO) {
+        const resultMetrices = await this.resultModel.find({}, {
+            time: 1,
+            status: 1,
+            statusCode: 1,
+            createdAt: 1,
+            _id: 0,
+        }).where({
+            service: serviceInfo.serviceId,
+        });
+
+        return resultMetrices.map(e => {
+            return {
+                ...e,
+                createdAt: moment(e.createdAt).format('HH:mm'),
+            };
+        });
     }
 }

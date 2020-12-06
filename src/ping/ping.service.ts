@@ -34,7 +34,7 @@ export class PingService {
     }
 
     async getServices() {
-        return this.serviceModel.find().populate('query');
+        return this.serviceModel.find({}, { name: 1 });
     }
 
     async getNextWatchlist() {

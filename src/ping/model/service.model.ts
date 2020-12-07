@@ -24,7 +24,7 @@ export class HttpServiceModel {
     @Prop()
     headers: string[];
 
-    @Prop({ default: 300 })
+    @Prop({ default: 1800 })
     timeout: number;
 
     @Prop()

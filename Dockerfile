@@ -1,6 +1,6 @@
 FROM node:12-alpine as builder
 WORKDIR /app
-ADD package.json package-lock.json tsconfig.json tsconfig.build.json /app/
+ADD package.json package-lock.json tsconfig.json tsconfig.build.json nest-cli.json nest-cli-kafka.json /app/
 RUN npm i
 
 

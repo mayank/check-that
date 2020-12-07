@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PingModule } from './ping/ping.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PingGeneratorService } from './ping/cron/ping.cron';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PingGeneratorService],
 })
-export class AppModule {}
+export class AppModule { }

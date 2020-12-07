@@ -1,9 +1,8 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AddServiceDTO } from './dto/add-service.dto';
 import { Model } from 'mongoose';
 import { ServiceModel, HttpServiceModel, ServiceDocument, HttpServiceDocument } from './model/service.model';
 import { InjectModel } from '@nestjs/mongoose';
-import { OnEvent } from '@nestjs/event-emitter';
 import { PingGeneratorEvent } from './model/generator.event';
 import axios from 'axios';
 import { ResultDocument, ResultModel, ResultStatus } from './model/result.model';
@@ -12,9 +11,9 @@ import * as moment from 'moment';
 import { head } from 'lodash';
 import * as mongoose from 'mongoose';
 
-@Injectable()
-export class PingService {
 
+@Injectable()
+export class PingService { 
     constructor(
         @InjectModel(ServiceModel.name) private readonly serviceModel: Model<ServiceDocument>,
         @InjectModel(HttpServiceModel.name) private readonly httpServiceModel: Model<HttpServiceDocument>,
@@ -66,8 +65,6 @@ export class PingService {
             .gte('createdAt', moment().subtract(1, 'month'))
             .count();
 
-        console.log(failures, totalRequests);
-
         return (100 - (failures / totalRequests)).toFixed(3);
     }
 
@@ -101,23 +98,23 @@ export class PingService {
             .populate('query');
     }
 
-    @OnEvent('ping.http.create', { async: true })
-    async createNewHttpPing(payload: PingGeneratorEvent) {
+    async createNewHttpPing(payload: ServiceDocument) {
         const result = new this.resultModel({
-            service: payload.service,
+            service: payload._id,
         });
 
         const startTime = new Date();
 
         try {
-            const response = await axios(payload.service.query);
+            const response = await axios(payload.query);
             const endTime = new Date();
 
             result.time = endTime.getTime() - startTime.getTime();
             result.statusCode = response.status;
-            result.status = response.status === payload.service.query.statusCode ? ResultStatus.SUCCESS : ResultStatus.FAILURE;
+            result.status = response.status === payload.query.statusCode ? ResultStatus.SUCCESS : ResultStatus.FAILURE;
         }
         catch (err) {
+            console.log(err.message);
             const endTime = new Date();
             result.time = endTime.getTime() - startTime.getTime();
             result.status = ResultStatus.FAILURE;
@@ -154,10 +151,16 @@ export class PingService {
                     failures: {
                         $sum: {
                             $cond: { 
-                                if: ['$status', ResultStatus.SUCCESS], then: 1, else: 0
+                                if: ['$status', ResultStatus.SUCCESS], then: 0, else: 1
                             } 
                         }
                     }
+                }
+            },
+            {
+                $sort: {
+                    '_id.hour': 1,
+                    '_id.minute': 1,
                 }
             }
         ]);
@@ -166,7 +169,7 @@ export class PingService {
             return {
                 time: Math.round(e.responseTime),
                 failures: e.failures,
-                createdAt: `${e._id.hour}:${e._id.minute}`,
+                createdAt: `${e._id.hour}:${String(e._id.minute).padStart(1, '0')}`,
             };
         });
     }

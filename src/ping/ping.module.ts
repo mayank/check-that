@@ -5,6 +5,8 @@ import { PingController } from './ping.controller';
 import { PingService } from './ping.service';
 import { PingGeneratorService } from './cron/ping.cron';
 import { ResultModel, ResultSchema } from './model/result.model';
+import { ClientsModule } from '@nestjs/microservices';
+import { kafkaConfig } from 'src/kafka.config';
 
 @Module({
     imports: [
@@ -23,9 +25,10 @@ import { ResultModel, ResultSchema } from './model/result.model';
                     schema: ResultSchema,
                 },
             ]
-        )
+        ),
     ],
     controllers: [PingController],
-    providers: [PingService, PingGeneratorService]
+    providers: [PingService],
+    exports: [PingService],
 })
 export class PingModule {}

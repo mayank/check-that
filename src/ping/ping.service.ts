@@ -13,7 +13,7 @@ import * as mongoose from 'mongoose';
 
 
 @Injectable()
-export class PingService { 
+export class PingService {
     constructor(
         @InjectModel(ServiceModel.name) private readonly serviceModel: Model<ServiceDocument>,
         @InjectModel(HttpServiceModel.name) private readonly httpServiceModel: Model<HttpServiceDocument>,
@@ -40,19 +40,20 @@ export class PingService {
         const services = await this.serviceModel.find({}, { name: 1 });
         const results = [];
         for (const service of services) {
-            const upTime = await this.getUpTime(service);
+            const { upTime, failures } = await this.getUpTimeAndFailures(service);
             const avgResponseTime = await this.getAvgResponseTime(service);
             results.push({
                 _id: service._id,
                 name: service.name,
                 upTime,
                 avgResponseTime,
+                failures,
             })
         }
         return results;
     }
 
-    async getUpTime(service: ServiceDocument) {
+    async getUpTimeAndFailures(service: ServiceDocument) {
         const failures = await this.resultModel.find()
             .where({
                 status: ResultStatus.FAILURE,
@@ -65,7 +66,10 @@ export class PingService {
             .gte('createdAt', moment().subtract(1, 'month'))
             .count();
 
-        return (100 - (failures / totalRequests)).toFixed(3);
+        return {
+            failures,
+            upTime: (100 - (failures / totalRequests)).toFixed(3)
+        };
     }
 
     async getAvgResponseTime(service: ServiceDocument) {
@@ -143,16 +147,16 @@ export class PingService {
                     },
                     responseTime: {
                         $avg: {
-                            $cond: { 
-                                if: ['$status', ResultStatus.SUCCESS], then: '$time', else: 0
-                            }
+                            $cond: [
+                                { $eq: ['$status', ResultStatus.SUCCESS] }, '$time', 0
+                            ]
                         }
                     },
                     failures: {
                         $sum: {
-                            $cond: { 
-                                if: ['$status', ResultStatus.SUCCESS], then: 0, else: 1
-                            } 
+                            $cond: [
+                                { $eq: ['$status', ResultStatus.FAILURE] }, 1, 0
+                            ]
                         }
                     }
                 }
@@ -167,9 +171,9 @@ export class PingService {
 
         return resultMetrices.map(e => {
             return {
-                time: Math.round(e.responseTime),
-                failures: e.failures,
-                createdAt: `${e._id.hour}:${String(e._id.minute).padStart(1, '0')}`,
+                t: Math.round(e.responseTime),
+                f: e.failures,
+                c: `${e._id.hour}:${String(e._id.minute).padStart(2, '0')}`,
             };
         });
     }

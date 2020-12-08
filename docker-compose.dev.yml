@@ -13,6 +13,7 @@ services:
         logging: 
             driver: "none"
     app:
+        image: check-that:latest
         build:
             context: ./
             target: builder
@@ -29,8 +30,9 @@ services:
             - kafka
             - mongo
     consumer:
+        image: check-that:latest
         deploy:
-            replicas: 4
+            replicas: 2
         build:
             context: ./
             target: builder
